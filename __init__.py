@@ -111,23 +111,24 @@ class HyperionLightSkill(MycroftSkill):
                 myRed = math.trunc(Color(findcolor).get_red() * 255)
                 myGreen = math.trunc(Color(findcolor).get_green() * 255)
                 myBlue = math.trunc(Color(findcolor).get_blue() * 255)
-                bulbLHS.set_rgb(myRed, myGreen, myBlue)
-                sleep(seq_delay)
-                bulbRHS.set_rgb(myRed, myGreen, myBlue)
-                self.speak_dialog("light.set", data ={"result": findcolor})
-                break
+                mycmd = "hyperion-remote --effect 'Knight rider' --duration 3000"
+                result = self.ssh_cmd(self, mycmd)
+                if not result:
+                    self.speak_dialog("light.set", data ={"result": findcolor})
+                    break
         dim_level = re.findall('\d+', str_remainder)
         if dim_level:
-            bulbLHS.set_brightness(int(dim_level[0]), duration=effect_delay)
-            sleep(seq_delay)
-            bulbRHS.set_brightness(int(dim_level[0]), duration=effect_delay)
-            self.speak_dialog("light.set", data={"result": str(dim_level[0])+ ", percent"})
+            mycmd = "hyperion-remote --effect 'Knight rider' --duration 3000"
+            result = self.ssh_cmd(self, mycmd)
+            if not result:
+                self.speak_dialog("light.set", data={"result": str(dim_level[0])+ ", percent"})
 
     def handle_hyperion_goal_intent(self, message):
-        bulbRHS.set_brightness(5, duration=effect_delay)
-        sleep(seq_delay)
-        bulbLHS.set_brightness(5, duration=effect_delay)
-        self.speak_dialog("light.dim")
+        mycmd = "hyperion-remote --effect 'Knight rider' --duration 3000"
+        result = self.ssh_cmd(self, mycmd)
+        if not result:
+            bulbRHS.set_brightness(5, duration=effect_delay)
+        # self.speak_dialog("light.dim")
 
     # The "stop" method defines what Mycroft does when told to stop during
     # the skill's execution. In this case, since the skill's functionality
