@@ -127,7 +127,7 @@ class HyperionLightSkill(MycroftSkill):
 
     def handle_hyperion_goal_intent(self, message):
         mycmd = "hyperion-remote --effect 'Knight rider' --duration 40000"
-        result = self.ssh_cmd(self, mycmd)
+        result = self.ssh_cmd(mycmd)
         if not result:
             self.process = play_mp3(join(dirname(__file__), "mp3", "Bruins-GH.mp3"))
             # self.speak_dialog("light.dim")
