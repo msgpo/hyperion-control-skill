@@ -12,7 +12,7 @@ from time import sleep
 from colour import Color
 import math
 import re
-
+from pexpect import pxssh
 
 __author__ = 'PCWii'
 
@@ -30,6 +30,18 @@ Valid_Color = ['red', 'read', 'orange', 'yellow', 'green', 'blue', 'indigo', 'vi
 # base methods from the MycroftSkill class with the syntax you can see below:
 # "class ____Skill(MycroftSkill)"
 class HyperionLightSkill(MycroftSkill):
+    def ssh_cmd(self, str_cmd):
+        try:
+            s = pxssh.pxssh()
+            hostname = '192.168.0.32'  # raw_input('hostname: 192.168.0.32')
+            username = 'osmc'  # raw_input('username: osmc')
+            password = 'osmc'  # getpass.getpass('password: osmc')
+            s.login(hostname, username, password)
+            s.sendline(str_cmd)
+            s.logout()
+            return None
+        except pxssh.ExceptionPxssh as e:
+            return e
 
     # The constructor of the skill, which calls MycroftSkill's constructor
     def __init__(self):
@@ -57,8 +69,12 @@ class HyperionLightSkill(MycroftSkill):
 
         hyperion_light_set_intent = IntentBuilder("HyperionLightSetIntent").\
             require("SetKeyword").require("DeviceKeyword").\
-            optionally("Lightkeyword").build()
+            optionally("LightKeyword").build()
         self.register_intent(hyperion_light_set_intent, self.handle_hyperion_light_set_intent)
+
+        hyperion_goal_intent = IntentBuilder("HyperionGoalIntent"). \
+            require("GoalKeyword").build()
+        self.register_intent(hyperion_goal_intent, self.handle_hyperion_goal_intent)
 
 
     # The "handle_xxxx_intent" functions define Mycroft's behavior when
@@ -68,30 +84,22 @@ class HyperionLightSkill(MycroftSkill):
     # of a file in the dialog folder, and Mycroft speaks its contents when
     # the method is called.
     def handle_hyperion_light_on_intent(self, message):
-        bulbRHS.turn_on()
-        sleep(seq_delay)
-        bulbLHS.turn_on()
-        sleep(seq_delay)
-        bulbLHS.set_rgb(255, 255, 255)
-        sleep(seq_delay)
-        bulbRHS.set_rgb(255, 255, 255)
-        sleep(seq_delay)
-        bulbRHS.set_brightness(100, duration=effect_delay)
-        sleep(seq_delay)
-        bulbLHS.set_brightness(100, duration=effect_delay)
-        self.speak_dialog("light.on")
+        mycmd = "hyperion-remote --effect 'Knight rider' --duration 3000"
+        result = self.ssh_cmd(self,mycmd)
+        if not result:
+            self.speak_dialog("light.on")
 
     def handle_hyperion_light_off_intent(self, message):
-        bulbRHS.turn_off(duration=effect_delay)
-        sleep(seq_delay)
-        bulbLHS.turn_off(duration=effect_delay)
-        self.speak_dialog("light.off")
+        mycmd = "hyperion-remote --effect 'Knight rider' --duration 3000"
+        result = self.ssh_cmd(self,mycmd)
+        if not result:
+            self.speak_dialog("light.off")
 
     def handle_hyperion_light_dim_intent(self, message):
-        bulbRHS.set_brightness(5, duration=effect_delay)
-        sleep(seq_delay)
-        bulbLHS.set_brightness(5, duration=effect_delay)
-        self.speak_dialog("light.dim")
+        mycmd = "hyperion-remote --effect 'Knight rider' --duration 3000"
+        result = self.ssh_cmd(self,mycmd)
+        if not result:
+            self.speak_dialog("light.dim")
 
     def handle_hyperion_light_set_intent(self, message):
         str_remainder = str(message.utterance_remainder())
@@ -114,6 +122,12 @@ class HyperionLightSkill(MycroftSkill):
             sleep(seq_delay)
             bulbRHS.set_brightness(int(dim_level[0]), duration=effect_delay)
             self.speak_dialog("light.set", data={"result": str(dim_level[0])+ ", percent"})
+
+    def handle_hyperion_goal_intent(self, message):
+        bulbRHS.set_brightness(5, duration=effect_delay)
+        sleep(seq_delay)
+        bulbLHS.set_brightness(5, duration=effect_delay)
+        self.speak_dialog("light.dim")
 
     # The "stop" method defines what Mycroft does when told to stop during
     # the skill's execution. In this case, since the skill's functionality
