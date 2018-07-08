@@ -4,7 +4,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Mycroft Core.  If not, see <http://www.gnu.org/licenses/>.
 
-from os.path import dirname
+from os.path import dirname, join
 from adapt.intent import IntentBuilder
 from mycroft.skills.core import MycroftSkill
 from mycroft.util.log import getLogger
@@ -85,19 +85,19 @@ class HyperionLightSkill(MycroftSkill):
     # the method is called.
     def handle_hyperion_light_on_intent(self, message):
         mycmd = 'hyperion-remote -c white'
-        result = self.ssh_cmd(self, mycmd)
+        result = self.ssh_cmd(mycmd)
         if not result:
             self.speak_dialog("light.on")
 
     def handle_hyperion_light_off_intent(self, message):
         mycmd = "hyperion-remote -x"
-        result = self.ssh_cmd(self, mycmd)
+        result = self.ssh_cmd(mycmd)
         if not result:
             self.speak_dialog("light.off")
 
     def handle_hyperion_light_dim_intent(self, message):
         mycmd = "hyperion-remote --effect 'Knight rider' --duration 3000"
-        result = self.ssh_cmd(self, mycmd)
+        result = self.ssh_cmd(mycmd)
         if not result:
             self.speak_dialog("light.dim")
 
@@ -113,7 +113,7 @@ class HyperionLightSkill(MycroftSkill):
                 myBlue = math.trunc(Color(findcolor).get_blue() * 255)
                 myHex = Color(findcolor).hex_l
                 mycmd = "hyperion-remote --color " + myHex[1:]
-                result = self.ssh_cmd(self, mycmd)
+                result = self.ssh_cmd(mycmd)
                 if not result:
                     self.speak_dialog("light.set", data ={"result": findcolor})
                     break
@@ -121,7 +121,7 @@ class HyperionLightSkill(MycroftSkill):
         if dim_level:
             new_brightness = int(dim_level[0]) * 0.1
             mycmd = "hyperion-remote -m" + new_brightness
-            result = self.ssh_cmd(self, mycmd)
+            result = self.ssh_cmd(mycmd)
             if not result:
                 self.speak_dialog("light.set", data={"result": str(dim_level[0])+ ", percent"})
 
