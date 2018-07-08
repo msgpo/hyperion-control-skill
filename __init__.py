@@ -120,7 +120,7 @@ class HyperionLightSkill(MycroftSkill):
         dim_level = re.findall('\d+', str_remainder)
         if dim_level:
             new_brightness = int(dim_level[0]) * 0.1
-            mycmd = "hyperion-remote -m" + new_brightness
+            mycmd = "hyperion-remote -m" + str(new_brightness)
             result = self.ssh_cmd(mycmd)
             if not result:
                 self.speak_dialog("light.set", data={"result": str(dim_level[0])+ ", percent"})
