@@ -84,20 +84,20 @@ class HyperionLightSkill(MycroftSkill):
     # of a file in the dialog folder, and Mycroft speaks its contents when
     # the method is called.
     def handle_hyperion_light_on_intent(self, message):
-        mycmd = "hyperion-remote --effect 'Knight rider' --duration 3000"
-        result = self.ssh_cmd(self,mycmd)
+        mycmd = 'hyperion-remote -c white'
+        result = self.ssh_cmd(self, mycmd)
         if not result:
             self.speak_dialog("light.on")
 
     def handle_hyperion_light_off_intent(self, message):
-        mycmd = "hyperion-remote --effect 'Knight rider' --duration 3000"
-        result = self.ssh_cmd(self,mycmd)
+        mycmd = "hyperion-remote -x"
+        result = self.ssh_cmd(self, mycmd)
         if not result:
             self.speak_dialog("light.off")
 
     def handle_hyperion_light_dim_intent(self, message):
         mycmd = "hyperion-remote --effect 'Knight rider' --duration 3000"
-        result = self.ssh_cmd(self,mycmd)
+        result = self.ssh_cmd(self, mycmd)
         if not result:
             self.speak_dialog("light.dim")
 
@@ -111,14 +111,16 @@ class HyperionLightSkill(MycroftSkill):
                 myRed = math.trunc(Color(findcolor).get_red() * 255)
                 myGreen = math.trunc(Color(findcolor).get_green() * 255)
                 myBlue = math.trunc(Color(findcolor).get_blue() * 255)
-                mycmd = "hyperion-remote --effect 'Knight rider' --duration 3000"
+                myHex = Color(findcolor).hex_l
+                mycmd = "hyperion-remote --color " + myHex[1:]
                 result = self.ssh_cmd(self, mycmd)
                 if not result:
                     self.speak_dialog("light.set", data ={"result": findcolor})
                     break
         dim_level = re.findall('\d+', str_remainder)
         if dim_level:
-            mycmd = "hyperion-remote --effect 'Knight rider' --duration 3000"
+            new_brightness = int(dim_level[0]) * 0.1
+            mycmd = "hyperion-remote -m" + new_brightness
             result = self.ssh_cmd(self, mycmd)
             if not result:
                 self.speak_dialog("light.set", data={"result": str(dim_level[0])+ ", percent"})
