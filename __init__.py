@@ -8,7 +8,7 @@ from os.path import dirname
 from adapt.intent import IntentBuilder
 from mycroft.skills.core import MycroftSkill
 from mycroft.util.log import getLogger
-from time import sleep
+from mycroft.util import play_mp3
 from colour import Color
 import math
 import re
@@ -126,11 +126,11 @@ class HyperionLightSkill(MycroftSkill):
                 self.speak_dialog("light.set", data={"result": str(dim_level[0])+ ", percent"})
 
     def handle_hyperion_goal_intent(self, message):
-        mycmd = "hyperion-remote --effect 'Knight rider' --duration 3000"
+        mycmd = "hyperion-remote --effect 'Knight rider' --duration 40000"
         result = self.ssh_cmd(self, mycmd)
         if not result:
-            bulbRHS.set_brightness(5, duration=effect_delay)
-        # self.speak_dialog("light.dim")
+            self.process = play_mp3(join(dirname(__file__), "mp3", "Bruins-GH.mp3"))
+            # self.speak_dialog("light.dim")
 
     # The "stop" method defines what Mycroft does when told to stop during
     # the skill's execution. In this case, since the skill's functionality
