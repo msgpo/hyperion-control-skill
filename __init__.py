@@ -122,7 +122,7 @@ class HyperionLightSkill(MycroftSkill):
                 self.speak_dialog("light.set", data={"result": str(dim_level[0])+ ", percent"})
 
     def handle_hyperion_goal_intent(self, message):
-        mycmd = '{"command":"effect","duration":3000,"effect":{"name":"Knight rider"},"priority":100}'
+        mycmd = '{"command":"effect","duration":15000,"effect":{"name":"Knight rider"},"priority":100}'
         result = self.send_to_hyperion(mycmd)
         if 'success' in str(result):
             self.process = play_mp3(join(dirname(__file__), "mp3", "Bruins-GH.mp3"))
