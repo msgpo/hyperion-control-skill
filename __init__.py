@@ -31,16 +31,17 @@ effect_delay = 3000
 Valid_Color = ['red', 'read', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet', 'purple', 'white']
 
 
-class HyperionLightSkill(MycroftSkill):
-    async def send_to_hyperion(self, ambilight_command):
-        async with websockets.connect('ws://192.168.0.32:19444') as websocket:
-            name = ambilight_command
-            await websocket.send(name)
-            LOG.info(f"> {name}")
-            greeting = await websocket.recv()
-            LOG.info(f"< {greeting}")
-            return greeting
+async def send_to_hyperion(ambilight_command):
+    async with websockets.connect('ws://192.168.0.32:19444') as websocket:
+        name = ambilight_command
+        await websocket.send(name)
+        LOG.info(f"> {name}")
+        greeting = await websocket.recv()
+        LOG.info(f"< {greeting}")
+        return greeting
 
+
+class HyperionLightSkill(MycroftSkill):
     def ssh_cmd(self, str_cmd):
         try:
             s = pxssh.pxssh()
@@ -89,19 +90,19 @@ class HyperionLightSkill(MycroftSkill):
 
     def handle_hyperion_light_on_intent(self, message):
         mycmd = '{"color":[255,255,255],"command":"color","priority":100}'
-        result = asyncio.get_event_loop().run_until_complete(self.send_to_hyperion(mycmd))
+        result = asyncio.get_event_loop().run_until_complete(send_to_hyperion(mycmd))
         if 'success' in str(result):
             self.speak_dialog("light.on")
 
     def handle_hyperion_light_off_intent(self, message):
         mycmd = '{"command":"clear","priority":100}'
-        result = asyncio.get_event_loop().run_until_complete(self.send_to_hyperion(mycmd))
+        result = asyncio.get_event_loop().run_until_complete(send_to_hyperion(mycmd))
         if 'success' in str(result):
             self.speak_dialog("light.off")
 
     def handle_hyperion_light_dim_intent(self, message):
         mycmd = '{"command":"effect","duration":3000,"effect":{"name":"Knight rider"},"priority":100}'
-        result = asyncio.get_event_loop().run_until_complete(self.send_to_hyperion(mycmd))
+        result = asyncio.get_event_loop().run_until_complete(send_to_hyperion(mycmd))
         if 'success' in str(result):
             self.speak_dialog("light.dim")
 
@@ -118,7 +119,7 @@ class HyperionLightSkill(MycroftSkill):
                 myHex = Color(findcolor).hex_l
                 mycmd = '{"color":[' + str(my_red) + ',' + str(my_blue) + ',' + str(my_green) + '],' \
                         '"command":"color","priority":100}'
-                result = asyncio.get_event_loop().run_until_complete(self.send_to_hyperion(mycmd))
+                result = asyncio.get_event_loop().run_until_complete(send_to_hyperion(mycmd))
                 if 'success' in str(result):
                     self.speak_dialog("light.set", data ={"result": findcolor})
                     break
@@ -126,13 +127,13 @@ class HyperionLightSkill(MycroftSkill):
         if dim_level:
             new_brightness = int(dim_level[0]) * 0.01
             mycmd = '{"command": "transform", "transform": {"luminanceGain": ' + str(new_brightness) + '}}'
-            result = asyncio.get_event_loop().run_until_complete(self.send_to_hyperion(mycmd))
+            result = asyncio.get_event_loop().run_until_complete(send_to_hyperion(mycmd))
             if 'success' in str(result):
                 self.speak_dialog("light.set", data={"result": str(dim_level[0])+ ", percent"})
 
     def handle_hyperion_goal_intent(self, message):
         mycmd = '{"command":"effect","duration":3000,"effect":{"name":"Knight rider"},"priority":100}'
-        result = asyncio.get_event_loop().run_until_complete(self.send_to_hyperion(mycmd))
+        result = asyncio.get_event_loop().run_until_complete(send_to_hyperion(mycmd))
         if 'success' in str(result):
             self.process = play_mp3(join(dirname(__file__), "mp3", "Bruins-GH.mp3"))
 
