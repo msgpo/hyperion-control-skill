@@ -1,3 +1,5 @@
+websockets
+asyncio
 requests
 colour
 pexpect

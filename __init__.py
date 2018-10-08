@@ -13,6 +13,10 @@ from colour import Color
 import math
 import re
 from pexpect import pxssh
+from mycroft.util.log import LOG
+
+import asyncio
+import websockets
 
 __author__ = 'PCWii'
 
@@ -26,10 +30,17 @@ effect_delay = 3000
 
 Valid_Color = ['red', 'read', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet', 'purple', 'white']
 
-# The logic of each skill is contained within its own class, which inherits
-# base methods from the MycroftSkill class with the syntax you can see below:
-# "class ____Skill(MycroftSkill)"
+
 class HyperionLightSkill(MycroftSkill):
+    async def send_to_hyperion(self, ambilight_command):
+        async with websockets.connect('ws://192.168.0.32:19444') as websocket:
+            name = ambilight_command
+            await websocket.send(name)
+            LOG.info(f"> {name}")
+            greeting = await websocket.recv()
+            LOG.info(f"< {greeting}")
+            return greeting
+
     def ssh_cmd(self, str_cmd):
         try:
             s = pxssh.pxssh()
@@ -76,29 +87,22 @@ class HyperionLightSkill(MycroftSkill):
             require("GoalKeyword").build()
         self.register_intent(hyperion_goal_intent, self.handle_hyperion_goal_intent)
 
-
-    # The "handle_xxxx_intent" functions define Mycroft's behavior when
-    # each of the skill's intents is triggered: in this case, he simply
-    # speaks a response. Note that the "speak_dialog" method doesn't
-    # actually speak the text it's passed--instead, that text is the filename
-    # of a file in the dialog folder, and Mycroft speaks its contents when
-    # the method is called.
     def handle_hyperion_light_on_intent(self, message):
-        mycmd = 'hyperion-remote -c white'
-        result = self.ssh_cmd(mycmd)
-        if not result:
+        mycmd = '{"color":[255,255,255],"command":"color","priority":100}'
+        result = asyncio.get_event_loop().run_until_complete(self.send_to_hyperion(mycmd))
+        if 'success' in str(result):
             self.speak_dialog("light.on")
 
     def handle_hyperion_light_off_intent(self, message):
-        mycmd = "hyperion-remote -x"
-        result = self.ssh_cmd(mycmd)
-        if not result:
+        mycmd = '{"command":"clear","priority":100}'
+        result = asyncio.get_event_loop().run_until_complete(self.send_to_hyperion(mycmd))
+        if 'success' in str(result):
             self.speak_dialog("light.off")
 
     def handle_hyperion_light_dim_intent(self, message):
-        mycmd = "hyperion-remote --effect 'Knight rider' --duration 3000"
-        result = self.ssh_cmd(mycmd)
-        if not result:
+        mycmd = '{"command":"effect","duration":3000,"effect":{"name":"Knight rider"},"priority":100}'
+        result = asyncio.get_event_loop().run_until_complete(self.send_to_hyperion(mycmd))
+        if 'success' in str(result):
             self.speak_dialog("light.dim")
 
     def handle_hyperion_light_set_intent(self, message):
@@ -108,38 +112,33 @@ class HyperionLightSkill(MycroftSkill):
             if mypos > 0:
                 if findcolor == 'read':
                     findcolor = 'red'
-                myRed = math.trunc(Color(findcolor).get_red() * 255)
-                myGreen = math.trunc(Color(findcolor).get_green() * 255)
-                myBlue = math.trunc(Color(findcolor).get_blue() * 255)
+                my_red = math.trunc(Color(findcolor).get_red() * 255)
+                my_green = math.trunc(Color(findcolor).get_green() * 255)
+                my_blue = math.trunc(Color(findcolor).get_blue() * 255)
                 myHex = Color(findcolor).hex_l
-                mycmd = "hyperion-remote --color " + myHex[1:]
-                result = self.ssh_cmd(mycmd)
-                if not result:
+                mycmd = '{"color":[' + str(my_red) + ',' + str(my_blue) + ',' + str(my_green) + '],' \
+                        '"command":"color","priority":100}'
+                result = asyncio.get_event_loop().run_until_complete(self.send_to_hyperion(mycmd))
+                if 'success' in str(result):
                     self.speak_dialog("light.set", data ={"result": findcolor})
                     break
         dim_level = re.findall('\d+', str_remainder)
         if dim_level:
             new_brightness = int(dim_level[0]) * 0.01
-            mycmd = "hyperion-remote -m " + str(new_brightness)
-            result = self.ssh_cmd(mycmd)
-            if not result:
+            mycmd = '{"command": "transform", "transform": {"luminanceGain": ' + str(new_brightness) + '}}'
+            result = asyncio.get_event_loop().run_until_complete(self.send_to_hyperion(mycmd))
+            if 'success' in str(result):
                 self.speak_dialog("light.set", data={"result": str(dim_level[0])+ ", percent"})
 
     def handle_hyperion_goal_intent(self, message):
-        mycmd = "hyperion-remote --effect 'Knight rider' --duration 40000"
-        result = self.ssh_cmd(mycmd)
-        if not result:
+        mycmd = '{"command":"effect","duration":3000,"effect":{"name":"Knight rider"},"priority":100}'
+        result = asyncio.get_event_loop().run_until_complete(self.send_to_hyperion(mycmd))
+        if 'success' in str(result):
             self.process = play_mp3(join(dirname(__file__), "mp3", "Bruins-GH.mp3"))
-            # self.speak_dialog("light.dim")
 
-    # The "stop" method defines what Mycroft does when told to stop during
-    # the skill's execution. In this case, since the skill's functionality
-    # is extremely simple, the method just contains the keyword "pass", which
-    # does nothing.
     def stop(self):
         pass
 
-# The "create_skill()" method is used to create an instance of the skill.
-# Note that it's outside the class itself.
+
 def create_skill():
     return HyperionLightSkill()
