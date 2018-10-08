@@ -107,7 +107,7 @@ class HyperionLightSkill(MycroftSkill):
                 my_green = math.trunc(Color(findcolor).get_green() * 255)
                 my_blue = math.trunc(Color(findcolor).get_blue() * 255)
                 myHex = Color(findcolor).hex_l
-                mycmd = '{"color":[' + str(my_red) + ',' + str(my_blue) + ',' + str(my_green) + '],' \
+                mycmd = '{"color":[' + str(my_red) + ',' + str(my_green) + ',' + str(my_blue) + '],' \
                         '"command":"color","priority":100}'
                 result = self.send_to_hyperion(mycmd)
                 if 'success' in str(result):
