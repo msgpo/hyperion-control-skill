@@ -56,22 +56,22 @@ class HyperionLightSkill(MycroftSkill):
 
         hyperion_light_on_intent = IntentBuilder("HyperionLightOnIntent").\
             require("DeviceKeyword").require("OnKeyword").\
-            optionally("LightKeyword").build()
+            optionally("LightKeyword").optionally("SilentKeyword").build()
         self.register_intent(hyperion_light_on_intent, self.handle_hyperion_light_on_intent)
 
         hyperion_light_off_intent = IntentBuilder("HyperionLightOffIntent").\
             require("DeviceKeyword").require("OffKeyword").\
-            optionally("LightKeyword").build()
+            optionally("LightKeyword").optionally("SilentKeyword").build()
         self.register_intent(hyperion_light_off_intent, self.handle_hyperion_light_off_intent)
 
         hyperion_light_dim_intent = IntentBuilder("HyperionLightDimIntent").\
             require("DimKeyword").require("DeviceKeyword").\
-            optionally("LightKeyword").build()
+            optionally("LightKeyword").optionally("SilentKeyword").build()
         self.register_intent(hyperion_light_dim_intent, self.handle_hyperion_light_dim_intent)
 
         hyperion_light_set_intent = IntentBuilder("HyperionLightSetIntent").\
             require("SetKeyword").require("DeviceKeyword").\
-            optionally("LightKeyword").build()
+            optionally("LightKeyword").optionally("SilentKeyword").build()
         self.register_intent(hyperion_light_set_intent, self.handle_hyperion_light_set_intent)
 
         hyperion_goal_intent = IntentBuilder("HyperionGoalIntent"). \
@@ -79,24 +79,31 @@ class HyperionLightSkill(MycroftSkill):
         self.register_intent(hyperion_goal_intent, self.handle_hyperion_goal_intent)
 
     def handle_hyperion_light_on_intent(self, message):
+        silent_kw = message.data.get("SilentKeyword")
         mycmd = '{"color":[255,255,255],"command":"color","priority":100}'
         result = self.send_to_hyperion(mycmd)
         if 'success' in str(result):
-            self.speak_dialog("light.on")
+            if not silent_kw:
+                self.speak_dialog("light.on")
 
     def handle_hyperion_light_off_intent(self, message):
+        silent_kw = message.data.get("SilentKeyword")
         mycmd = '{"command":"clear","priority":100}'
         result = self.send_to_hyperion(mycmd)
         if 'success' in str(result):
-            self.speak_dialog("light.off")
+            if not silent_kw:
+                self.speak_dialog("light.off")
 
     def handle_hyperion_light_dim_intent(self, message):
+        silent_kw = message.data.get("SilentKeyword")
         mycmd = '{"command":"effect","duration":3000,"effect":{"name":"Knight rider"},"priority":100}'
         result = self.send_to_hyperion(mycmd)
         if 'success' in str(result):
-            self.speak_dialog("light.dim")
+            if not silent_kw:
+                self.speak_dialog("light.dim")
 
     def handle_hyperion_light_set_intent(self, message):
+        silent_kw = message.data.get("SilentKeyword")
         str_remainder = str(message.utterance_remainder())
         for findcolor in Valid_Color:
             mypos = str_remainder.find(findcolor)
@@ -111,7 +118,8 @@ class HyperionLightSkill(MycroftSkill):
                         '"command":"color","priority":100}'
                 result = self.send_to_hyperion(mycmd)
                 if 'success' in str(result):
-                    self.speak_dialog("light.set", data ={"result": findcolor})
+                    if not silent_kw:
+                        self.speak_dialog("light.set", data ={"result": findcolor})
                     break
         dim_level = re.findall('\d+', str_remainder)
         if dim_level:
@@ -119,10 +127,11 @@ class HyperionLightSkill(MycroftSkill):
             mycmd = '{"command": "transform", "transform": {"luminanceGain": ' + str(new_brightness) + '}}'
             result = self.send_to_hyperion(mycmd)
             if 'success' in str(result):
-                self.speak_dialog("light.set", data={"result": str(dim_level[0])+ ", percent"})
+                if not silent_kw:
+                    self.speak_dialog("light.set", data={"result": str(dim_level[0])+ ", percent"})
 
     def handle_hyperion_goal_intent(self, message):
-        mycmd = '{"command":"effect","duration":15000,"effect":{"name":"Knight rider"},"priority":100}'
+        mycmd = '{"command":"effect","duration":30000,"effect":{"name":"Knight rider"},"priority":100}'
         result = self.send_to_hyperion(mycmd)
         if 'success' in str(result):
             self.process = play_mp3(join(dirname(__file__), "mp3", "Bruins-GH.mp3"))

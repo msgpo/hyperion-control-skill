@@ -25,6 +25,7 @@ def TestPanel(panel_id):
     MyPanelID = panel_id
     MyPanels = Aurora(IPstring, tokenString)
     Mystrm = MyPanels.effect_stream()
+
     Mystrm.panel_set(MyPanelID, 0, 0, 0)
 
 def GetPanels():
@@ -51,7 +52,7 @@ def HyperLeaf(my_panels):
     my_aurora.brightness = 50 #set brightness
     sleep(1)
     strm = my_aurora.effect_stream() #set nanoleaf to streaming mode, this only works with bharat's fork of nanoleaf
-    # print(strm.addr)
+    LOG.info(strm.addr)
     while True:
         data = sock.recvfrom(21)  # hyperion sends 3 bytes (R,G,B) for each configured light (3*7=21)
         now = datetime.datetime.now()  # retrieve time for debuging
