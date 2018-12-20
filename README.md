@@ -1,5 +1,6 @@
-## yeelight-skill
-Control hyperion strip lights with Mycroft
+## Hyperion-Skill
+Control the Hyperion Ambient Lighting controller for KODI
+This software will control your Hyperion instance with Mycroft
 
 ## Description 
 Utilize the KODI hyperion plugin for controlling the hyperion strip light RGB bulbs with Mycroft.
